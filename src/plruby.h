@@ -321,4 +321,15 @@ extern VALUE plruby_define_void_class _((char *, char *));
 #define CStringGD(a_) CStringGetDatum(a_)
 #define TupleGD(a_,b_) TupleGetDatum((a_),(b_))
 
+// PostgreSQL 9.1.1 has renamed C functions bitor and bitand to bit_or
+// and bit_and, because the former names conflicted with C++ keywords.
+// The following aliases will fix this if needed.
+
+#if !defined(bit_and) && defined(bitand)
+#define bit_and(a_) bitand(a_)
+#endif
+
+#if !defined(bit_or) && defined(bitor)
+#define bit_or(a_) bitor(a_)
+#endif
 

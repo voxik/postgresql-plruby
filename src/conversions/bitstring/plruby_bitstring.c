@@ -195,8 +195,8 @@ name_(VALUE obj, VALUE a)                                               \
 }
 
 BIT_OPERATOR(pl_bit_add, bitcat);
-BIT_OPERATOR(pl_bit_and, bitand);
-BIT_OPERATOR(pl_bit_or, bitor);
+BIT_OPERATOR(pl_bit_and, bit_and);
+BIT_OPERATOR(pl_bit_or, bit_or);
 BIT_OPERATOR(pl_bit_xor, bitxor);
 
 static VALUE
