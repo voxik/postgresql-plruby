@@ -34,11 +34,15 @@
 #include "utils/memutils.h"
 #endif
 
+#if PG_VERSION_NUM >= 90300
+#include "access/htup_details.h"
+#endif
+
 #include "package.h"
 
 #include <ruby.h>
 #if HAVE_ST_H
-#include <st.h>
+#include <ruby/st.h>
 #endif
 
 #ifndef StringValuePtr
