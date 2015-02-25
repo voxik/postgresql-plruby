@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 require 'rbconfig'
-include Config
+include RbConfig
 pwd = Dir.pwd
 pwd.sub!(%r{[^/]+/[^/]+$}, "")
 

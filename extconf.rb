@@ -52,7 +52,7 @@ def create_lang(version = 74, suffix = '', safe = 0)
 
 
    create function plruby#{suffix}_call_handler() returns #{opaque}
-   as '#{Config::CONFIG["sitearchdir"]}/plruby#{suffix}.#{CONFIG["DLEXT"]}'
+   as '#{RbConfig::CONFIG["sitearchdir"]}/plruby#{suffix}.#{RbConfig::CONFIG["DLEXT"]}'
    language '#{language}';
 
    create #{trusted} language 'plruby#{suffix}'
@@ -195,7 +195,7 @@ subdirs.each do |key|
    orig_argv << "--with-cflags='#$CFLAGS -I.. -I ../..'"
    orig_argv << "--with-ldflags='#$LDFLAGS'"
    orig_argv << "--with-cppflags='#$CPPFLAGS'"
-   cmd = "#{CONFIG['RUBY_INSTALL_NAME']} extconf.rb #{orig_argv.join(' ')}"
+   cmd = "#{RbConfig::CONFIG['RUBY_INSTALL_NAME']} extconf.rb #{orig_argv.join(' ')}"
    system("cd #{key}; #{cmd}")
 end
 
@@ -203,13 +203,13 @@ subdirs.unshift("src")
 
 begin
    Dir.chdir("src")
-   if CONFIG["ENABLE_SHARED"] == "no"
-      libs = if CONFIG.key?("LIBRUBYARG_STATIC")
-                Config::expand(CONFIG["LIBRUBYARG_STATIC"].dup).sub(/^-l/, '')
+   if RbConfig::CONFIG["ENABLE_SHARED"] == "no"
+      libs = if RbConfig::CONFIG.key?("LIBRUBYARG_STATIC")
+                RbConfig::expand(RbConfig::CONFIG["LIBRUBYARG_STATIC"].dup).sub(/^-l/, '')
              else
-                Config::expand(CONFIG["LIBRUBYARG"].dup).sub(/lib([^.]*).*/, '\\1')
+                RbConfig::expand(RbConfig::CONFIG["LIBRUBYARG"].dup).sub(/lib([^.]*).*/, '\\1')
              end
-      find_library(libs, "ruby_init", Config::expand(CONFIG["archdir"].dup))
+      find_library(libs, "ruby_init", RbConfig::expand(RbConfig::CONFIG["archdir"].dup))
    end
    $objs = ["plruby.o", "plplan.o", "plpl.o", "pltrans.o"] unless $objs
    create_makefile("plruby#{suffix}")
