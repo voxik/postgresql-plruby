@@ -7,6 +7,8 @@
 #include "commands/trigger.h"
 #include "utils/elog.h"
 #include "utils/builtins.h"
+#include "utils/rel.h"
+#include "utils/relcache.h"
 #include "fmgr.h"
 #include "access/heapam.h"
 
