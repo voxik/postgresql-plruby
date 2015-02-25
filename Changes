@@ -119,3 +119,8 @@ Akinori MUSHA.
 * adapted for 8.4
 * bug-fix
 * extconf.rb changed to make use of pg_config(1)
+
+--- 0.5.5 (2015-02-25) Devrim Gunduz
+
+* Fix compile errors with PostgreSQL 9.1+, Ruby 2.0+ and newer GCCs.
+* Add initial extension support.
