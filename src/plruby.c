@@ -1197,17 +1197,19 @@ for_numvals(obj, argobj)
         rb_raise(pl_ePLruby, "invalid attribute '%s'", RSTRING_PTR(key));
     }
     attnum -= 1;
-    if (arg->tupdesc->attrs[attnum]->attisdropped) {
+
+    Form_pg_attribute attr = TupleDescAttr(arg->tupdesc, attnum);
+    if (attr->attisdropped) {
         return Qnil;
     }
 
     PLRUBY_BEGIN(1);
     typeTup = SearchSysCache(TYPEOID,
-                             OidGD(arg->tupdesc->attrs[attnum]->atttypid),
+                             OidGD(attr->atttypid),
                              0, 0, 0);
     if (!HeapTupleIsValid(typeTup)) {   
         rb_raise(pl_ePLruby, "Cache lookup for attribute '%s' type %ld failed",
-                 RSTRING_PTR(key), OidGD(arg->tupdesc->attrs[attnum]->atttypid));
+                 RSTRING_PTR(key), OidGD(attr->atttypid));
     }
     fpg = (Form_pg_type) GETSTRUCT(typeTup);
     ReleaseSysCache(typeTup);
@@ -1237,13 +1239,13 @@ for_numvals(obj, argobj)
         arg->modvalues[attnum] = plruby_return_array(value, &prodesc);
     }
     else {
-        arg->modvalues[attnum] = 
-            plruby_to_datum(value, &finfo, 
-                            arg->tupdesc->attrs[attnum]->atttypid, 
+        arg->modvalues[attnum] =
+            plruby_to_datum(value, &finfo,
+                            attr->atttypid,
                             fpg->typelem,
-                            (!VARLENA_FIXED_SIZE(arg->tupdesc->attrs[attnum]))
-                            ? arg->tupdesc->attrs[attnum]->attlen
-                            : arg->tupdesc->attrs[attnum]->atttypmod);
+                            (!VARLENA_FIXED_SIZE(attr))
+                            ? attr->attlen
+                            : attr->atttypmod);
     }
     return Qnil;
 }
@@ -1297,11 +1299,12 @@ pl_trigger_handler(struct pl_thread_st *plth)
 
     tmp = rb_ary_new2(tupdesc->natts);
     for (i = 0; i < tupdesc->natts; i++) {
-        if (tupdesc->attrs[i]->attisdropped) {
+        Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
+        if (attr->attisdropped) {
             rb_ary_push(tmp, rb_str_freeze_new2(""));
         }
         else {
-            rb_ary_push(tmp, rb_str_freeze_new2(NameStr(tupdesc->attrs[i]->attname)));
+            rb_ary_push(tmp, rb_str_freeze_new2(NameStr(attr->attname)));
         }
     }
     rb_hash_aset(TG, rb_str_freeze_new2("relatts"), rb_ary_freeze(tmp));

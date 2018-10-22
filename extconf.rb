@@ -132,11 +132,11 @@ when /^PostgreSQL (\d+).(\d+)/
 else
    version = 0
 end
-if version < 73
+if version < 92
    raise <<-EOT
 
 ============================================================
-#{version_str} is unsupported.  Try plruby-0.4.2.
+#{version_str} is not supported.  Try plruby-0.5.7 or older.
 ============================================================
    EOT
 end

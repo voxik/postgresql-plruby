@@ -10,10 +10,10 @@ Prerequisite
 ------------
 
 > * ruby 1.8.7 or later (maybe 1.8.6 too)
-> * postgresql >= 7.3
+> * postgresql >= 9.2
 
   All PostgreSQL headers need to be installed. Command (see `INSTALL` in the
-  directory postgresql-7.x.y)
+  directory postgresql-x.y)
 
         make install-all-headers
 

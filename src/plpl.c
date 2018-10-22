@@ -137,11 +137,12 @@ pl_query_name(VALUE obj)
     }
     res = rb_ary_new2(tpl->dsc->natts);
     for (i = 0; i < tpl->dsc->natts; i++) {
-        if (tpl->dsc->attrs[i]->attisdropped) {
+        Form_pg_attribute attr = TupleDescAttr(tpl->dsc, i);
+        if (attr->attisdropped) {
             attname = "";
         }
         else {
-            attname = NameStr(tpl->dsc->attrs[i]->attname);
+            attname = NameStr(attr->attname);
         }
         rb_ary_push(res, rb_tainted_str_new2(attname));
     }
@@ -178,16 +179,17 @@ pl_query_type(VALUE obj)
     }
     res = rb_ary_new2(tpl->dsc->natts);
     for (i = 0; i < tpl->dsc->natts; i++) {
-        if (tpl->dsc->attrs[i]->attisdropped)
+        Form_pg_attribute attr = TupleDescAttr(tpl->dsc, i);
+        if (attr->attisdropped)
             continue;
         PLRUBY_BEGIN(1);
-        attname = NameStr(tpl->dsc->attrs[i]->attname);
-        typeTup = SearchSysCache(TYPEOID, OidGD(tpl->dsc->attrs[i]->atttypid),
+        attname = NameStr(attr->attname);
+        typeTup = SearchSysCache(TYPEOID, OidGD(attr->atttypid),
                                  0, 0, 0);
         PLRUBY_END;
         if (!HeapTupleIsValid(typeTup)) {
             rb_raise(pl_ePLruby, "Cache lookup for attribute '%s' type %ld failed",
-                     attname, OidGD(tpl->dsc->attrs[i]->atttypid));
+                     attname, OidGD(attr->atttypid));
         }
         fpgt = (Form_pg_type) GETSTRUCT(typeTup);
         rb_ary_push(res, rb_tainted_str_new2(NameStr(fpgt->typname)));
@@ -587,15 +589,16 @@ pl_tuple_heap(VALUE c, VALUE tuple)
     nulls = ALLOCA_N(char, RARRAY_LEN(c));
     MEMZERO(nulls, char, RARRAY_LEN(c));
     for (i = 0; i < RARRAY_LEN(c); i++) {
+        Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
         if (NIL_P(RARRAY_PTR(c)[i]) || 
-            tupdesc->attrs[i]->attisdropped) {
+            attr->attisdropped) {
             dvalues[i] = (Datum)0;
             nulls[i] = 'n';
         }
         else {
             nulls[i] = ' ';
-            typid =  tupdesc->attrs[i]->atttypid;
-            if (tupdesc->attrs[i]->attndims != 0 ||
+            typid = attr->atttypid;
+            if (attr->attndims != 0 ||
 		tpl->att->attinfuncs[i].fn_addr == (PGFunction)array_in) {
                 pl_proc_desc prodesc;
                 FmgrInfo func;
@@ -1088,18 +1091,19 @@ plruby_build_tuple(HeapTuple tuple, TupleDesc tupdesc, int type_ret)
     }
 
     for (i = 0; i < tupdesc->natts; i++) {
-        if (tupdesc->attrs[i]->attisdropped)
+        Form_pg_attribute pgattr = TupleDescAttr(tupdesc, i);
+        if (pgattr->attisdropped)
             continue;
         PLRUBY_BEGIN(1);
-        attname = NameStr(tupdesc->attrs[i]->attname);
+        attname = NameStr(pgattr->attname);
         attr = heap_getattr(tuple, i + 1, tupdesc, &isnull);
-        typeTup = SearchSysCache(TYPEOID, OidGD(tupdesc->attrs[i]->atttypid),
+        typeTup = SearchSysCache(TYPEOID, OidGD(pgattr->atttypid),
                                  0, 0, 0);
         PLRUBY_END;
 
         if (!HeapTupleIsValid(typeTup)) {
             rb_raise(pl_ePLruby, "Cache lookup for attribute '%s' type %ld failed",
-                     attname, OidGD(tupdesc->attrs[i]->atttypid));
+                     attname, OidGD(pgattr->atttypid));
         }
 
         fpgt = (Form_pg_type) GETSTRUCT(typeTup);
@@ -1115,18 +1119,18 @@ plruby_build_tuple(HeapTuple tuple, TupleDesc tupdesc, int type_ret)
             int alen;
 
             typname = NameStr(fpgt->typname);
-            alen = tupdesc->attrs[i]->attlen;
-            typeid = tupdesc->attrs[i]->atttypid;
+            alen = pgattr->attlen;
+            typeid = pgattr->atttypid;
             if (strcmp(typname, "text") == 0) {
                 alen = -1;
             }
             else if (strcmp(typname, "bpchar") == 0 ||
                      strcmp(typname, "varchar") == 0) {
-                if (tupdesc->attrs[i]->atttypmod == -1) {
+                if (pgattr->atttypmod == -1) {
                     alen = 0;
                 }
                 else {
-                    alen = tupdesc->attrs[i]->atttypmod - 4;
+                    alen = pgattr->atttypmod - 4;
                 }
             }
             if ((type_ret & RET_DESC_ARR) == RET_DESC_ARR) {
@@ -1190,8 +1194,8 @@ plruby_build_tuple(HeapTuple tuple, TupleDesc tupdesc, int type_ret)
                 
                 fmgr_info(typoutput, &finfo);
                 
-                s = pl_convert_arg(attr, tupdesc->attrs[i]->atttypid,
-                                   &finfo, typelem,tupdesc->attrs[i]->attlen);
+                s = pl_convert_arg(attr, pgattr->atttypid,
+                                   &finfo, typelem, pgattr->attlen);
             }
             PLRUBY_END_PROTECT;
 
