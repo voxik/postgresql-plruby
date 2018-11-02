@@ -557,7 +557,7 @@ pl_tuple_heap(VALUE c, VALUE tuple)
     TupleDesc tupdesc = 0;
     Datum *dvalues;
     Oid typid;
-    char *nulls;
+    bool *nulls;
     int i;
 
     
@@ -586,17 +586,17 @@ pl_tuple_heap(VALUE c, VALUE tuple)
     }
     dvalues = ALLOCA_N(Datum, RARRAY_LEN(c));
     MEMZERO(dvalues, Datum, RARRAY_LEN(c));
-    nulls = ALLOCA_N(char, RARRAY_LEN(c));
-    MEMZERO(nulls, char, RARRAY_LEN(c));
+    nulls = ALLOCA_N(bool, RARRAY_LEN(c));
+    MEMZERO(nulls, bool, RARRAY_LEN(c));
     for (i = 0; i < RARRAY_LEN(c); i++) {
         Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
         if (NIL_P(RARRAY_PTR(c)[i]) || 
             attr->attisdropped) {
             dvalues[i] = (Datum)0;
-            nulls[i] = 'n';
+            nulls[i] = true;
         }
         else {
-            nulls[i] = ' ';
+            nulls[i] = false;
             typid = attr->atttypid;
             if (attr->attndims != 0 ||
 		tpl->att->attinfuncs[i].fn_addr == (PGFunction)array_in) {
@@ -654,7 +654,7 @@ pl_tuple_heap(VALUE c, VALUE tuple)
         }
     }
     PLRUBY_BEGIN_PROTECT(1);
-    retval = heap_formtuple(tupdesc, dvalues, nulls);
+    retval = heap_form_tuple(tupdesc, dvalues, nulls);
     PLRUBY_END_PROTECT;
     return retval;
 }
