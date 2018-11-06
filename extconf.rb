@@ -36,7 +36,7 @@ rescue
 end
 
 def create_lang(version = 74, suffix = '', safe = 0)
-   language, opaque = 'C', 'language_handler'
+   language, opaque = 'c', 'language_handler'
    opaque = "opaque" if version == 72
    safe = safe.to_i
    trusted = if safe >= 4

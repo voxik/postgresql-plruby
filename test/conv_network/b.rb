@@ -4,7 +4,7 @@ include RbConfig
 pwd = Dir.pwd
 pwd.sub!(%r{[^/]+/[^/]+$}, "")
 
-language, extension = 'C', '_new_trigger'
+language, extension = 'c', '_new_trigger'
 opaque = 'language_handler'
 
 version = ARGV[0].to_i
@@ -36,8 +36,7 @@ begin
    language '#{language}';
  
    create trusted procedural language 'plruby#{suffix}'
-        handler plruby#{suffix}_call_handler
-        lancompiler 'PL/Ruby';
+        handler plruby#{suffix}_call_handler;
 EOF
    f.close
 rescue
