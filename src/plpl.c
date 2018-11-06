@@ -1471,19 +1471,6 @@ plruby_return_value(struct pl_thread_st *plth, pl_proc_desc *prodesc,
 #endif
     }
 
-    PLRUBY_BEGIN_PROTECT(1);
-    {
-        MemoryContext oldcxt;
-        int rc;
-
-        oldcxt = MemoryContextSwitchTo(plruby_spi_context);
-        if ((rc = SPI_finish()) != SPI_OK_FINISH) {
-            elog(ERROR, "SPI_finish() failed : %d", rc);
-        }
-        MemoryContextSwitchTo(oldcxt);
-    }
-    PLRUBY_END_PROTECT;
-
     if (c == Qnil) {
         if (expr_multiple) {
             pl_context_remove();

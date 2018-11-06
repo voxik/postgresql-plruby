@@ -363,6 +363,19 @@ pl_protect(plth)
 	    else {
 		retval = pl_func_handler(plth);
 	    }
+
+            PLRUBY_BEGIN_PROTECT(1);
+            {
+                MemoryContext oldcxt;
+                int rc;
+
+                oldcxt = MemoryContextSwitchTo(plruby_spi_context);
+                if ((rc = SPI_finish()) != SPI_OK_FINISH) {
+                    elog(ERROR, "SPI_finish() failed : %d", rc);
+                }
+                MemoryContextSwitchTo(oldcxt);
+            }
+            PLRUBY_END_PROTECT;
 	}
     }
 #ifdef PG_PL_TRYCATCH
@@ -1353,13 +1366,6 @@ pl_trigger_handler(struct pl_thread_st *plth)
 
     c = rb_funcall(pl_mPLtemp, rb_intern(RSTRING_PTR(value_proname)),
                    4, tg_new, tg_old, args, TG);
-
-    PLRUBY_BEGIN_PROTECT(1);
-    MemoryContextSwitchTo(plruby_spi_context);
-    if ((rc = SPI_finish()) != SPI_OK_FINISH) {
-        elog(ERROR, "SPI_finish() failed : %d",  rc);
-    }
-    PLRUBY_END_PROTECT;
 
     switch (TYPE(c)) {
     case T_TRUE:
