@@ -1514,13 +1514,10 @@ pl_poly_init(int argc, VALUE *argv, VALUE obj)
 {
     POLYGON *p;
     VALUE a;
-    int i, size, closed = Qfalse;
+    int i, size;
 
-    if (argc < 1 || argc > 2) {
+    if (argc != 1) {
         rb_raise(rb_eArgError, "initialize : expected Array of Points");
-    }
-    if (argc == 2) {
-        closed = RTEST(argv[1]);
     }
     a = rb_Array(argv[0]);
     Data_Get_Struct(obj, POLYGON, p);
