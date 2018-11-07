@@ -119,9 +119,16 @@ if have_func("rb_hash_delete", "ruby.h")
    $CFLAGS += " -DHAVE_RB_HASH_DELETE"
 end
 
-case version_str = `#{pg_config} --version`
-when /^PostgreSQL ([7-9])\.([0-9]{1,3})(\.[0-9]{1,3})?$/
-   version = 10 * $1.to_i + $2.to_i
+case version_str = `#{pg_config} --version`.strip
+when /^PostgreSQL (\d+).(\d+)/
+   if $1.to_i < 10
+       version = 10 * $1.to_i + $2.to_i
+   else
+       # In v10+, the second number means "minor" version - which is
+       # expected to be >= 10 one day.  So rather mutiply by 100 to avoid
+       # overflow.
+       version = 100 * $1.to_i + $2.to_i
+   end
 else
    version = 0
 end
