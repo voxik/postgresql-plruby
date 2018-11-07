@@ -68,8 +68,8 @@ def rule(target, clean = nil)
 \tdone;
 "
    if clean != nil
-      wr << "\t@-rm tmp/* tests/tmp/* 2> /dev/null\n"
-      wr << "\t@rm Makefile\n" if clean
+      wr << "\trm -f tmp/* tests/tmp/* 2> /dev/null\n"
+      wr << "\trm -f Makefile\n" if clean
    end
    wr
 end
