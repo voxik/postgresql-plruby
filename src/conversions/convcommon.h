@@ -1,12 +1,12 @@
 #include "package.h"
+#include "extconf.h"
 
 #include <postgres.h>
 #include <catalog/pg_type.h>
 #include <utils/builtins.h>
+#include <utils/timestamp.h>
 #include <lib/stringinfo.h>
-#include "package.h"
 #include <ruby.h>
-#include "package.h"
 
 #define CPY_FREE(p0_, p1_, size_) do {		\
     void *p2_ = (void *)p1_;			\
@@ -116,6 +116,10 @@ extern VALUE plruby_datum_get _((VALUE, Oid *));
 
 #ifndef RFLOAT_VALUE
 #define RFLOAT_VALUE(x_) (RFLOAT(x_)->value)
+#endif
+
+#ifndef HAVE_RB_FRAME_THIS_FUNC
+# define rb_frame_this_func rb_frame_last_func
 #endif
 
 extern Datum plruby_dfc0 _((PGFunction));

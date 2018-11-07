@@ -833,7 +833,7 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
     pl_proc_desc *prodesc;
     VALUE value_proc_desc;
     VALUE value_proname;
-    Oid result_oid, arg_type[FUNC_MAX_ARGS];
+    Oid result_oid = 0, arg_type[FUNC_MAX_ARGS];
     int nargs = 0;
     static char *argt = "new, old, args, tg";
     PG_FUNCTION_ARGS;
@@ -1260,7 +1260,7 @@ pl_trigger_handler(struct pl_thread_st *plth)
     char *stroid;
     HeapTuple rettup;
     TupleDesc tupdesc;
-    int i, rc;
+    int i;
     int *modattrs;
     Datum *modvalues;
     char *modnulls;

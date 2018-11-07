@@ -115,10 +115,6 @@ if ! have_header("catalog/pg_proc.h")
     raise  "Some include file are missing (see README for the installation)"
 end
 
-if have_func("rb_hash_delete", "ruby.h")
-   $CFLAGS += " -DHAVE_RB_HASH_DELETE"
-end
-
 case version_str = `#{pg_config} --version`.strip
 when /^PostgreSQL (\d+).(\d+)/
    if $1.to_i < 10
@@ -146,6 +142,9 @@ if "aa".respond_to?(:initialize_copy, true)
 end
 
 have_func("rb_block_call")
+have_func("rb_frame_this_func")
+have_func("rb_hash_delete", "ruby.h")
+
 have_header("st.h")
 
 if version >= 74
@@ -267,3 +266,4 @@ make.close
 
 create_lang(version, suffix, safe)
 
+create_header('src/extconf.h')

@@ -1,6 +1,7 @@
 Makefile
 mkmf.log
 src/Makefile
+src/extconf.h
 src/*.so
 src/conversions/*/plruby_*.so
 test/*/test.out

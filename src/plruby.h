@@ -25,6 +25,8 @@
 #include "funcapi.h"
 
 #include "utils/array.h"
+#include "utils/varlena.h"
+#include "utils/timestamp.h"
 
 #if PG_PL_VERSION >= 75
 #include "nodes/pg_list.h"
@@ -41,6 +43,7 @@
 #endif
 
 #include "package.h"
+#include "extconf.h"
 
 #include <ruby.h>
 #if HAVE_ST_H
@@ -321,7 +324,7 @@ extern VALUE plruby_define_void_class _((char *, char *));
 #define BoolGD(a_) BoolGetDatum(a_)
 #define IntGD(a_) Int32GetDatum(a_)
 #define CStringGD(a_) CStringGetDatum(a_)
-#define TupleGD(a_,b_) TupleGetDatum((a_),(b_))
+#define TupleGD(a_) HeapTupleGetDatum((a_))
 
 // PostgreSQL 9.1.1 has renamed C functions bitor and bitand to bit_or
 // and bit_and, because the former names conflicted with C++ keywords.
