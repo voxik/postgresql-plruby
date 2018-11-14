@@ -35,9 +35,8 @@ rescue
    true
 end
 
-def create_lang(version = 74, suffix = '', safe = 0)
+def create_lang(suffix = '', safe = 0)
    language, opaque = 'c', 'language_handler'
-   opaque = "opaque" if version == 72
    safe = safe.to_i
    trusted = if safe >= 4
 		"trusted"
@@ -180,8 +179,6 @@ if enable_conversion
    end
 end
 
-$CFLAGS += " -DPG_PL_VERSION=#{version}"
-
 suffix = with_config('suffix').to_s
 $CFLAGS += " -DPLRUBY_CALL_HANDLER=plruby#{suffix}_call_handler"
 $CFLAGS += " -DPLRUBY_VALIDATOR=plruby#{suffix}_validator"
@@ -255,6 +252,6 @@ end
 
 make.close
 
-create_lang(version, suffix, safe)
+create_lang(suffix, safe)
 
 create_header('src/extconf.h')

@@ -128,11 +128,7 @@ pl_plan_init(int argc, VALUE *argv, VALUE obj)
         for (i = 0; i < qdesc->nargs; i++) {
             char *argcopy;
             List *names = NIL;
-#if PG_PL_VERSION >= 75
             ListCell *lp;
-#else
-            List  *lp;
-#endif
             TypeName *typename;
             Form_pg_type fpgt;
             int arg_is_array = 0;
@@ -144,15 +140,7 @@ pl_plan_init(int argc, VALUE *argv, VALUE obj)
             typename = makeNode(TypeName);
             foreach (lp, names)
                 typename->names = lappend(typename->names, makeString(lfirst(lp)));
-#if PG_PL_VERSION >= 82
-#if PG_PL_VERSION >= 83
             typeTup = typenameType(NULL, typename, NULL);
-#else
-            typeTup = typenameType(NULL, typename);
-#endif
-#else
-            typeTup = typenameType(typename);
-#endif
             qdesc->argtypes[i] = HeapTupleGetOid(typeTup);
             fpgt = (Form_pg_type) GETSTRUCT(typeTup);
             arg_is_array = qdesc->arg_is_array[i] = NameStr(fpgt->typname)[0] == '_';
@@ -160,11 +148,7 @@ pl_plan_init(int argc, VALUE *argv, VALUE obj)
                 Oid elemtyp;
                 HeapTuple typeTuple;
 
-#if PG_PL_VERSION >= 75
                 elemtyp = getTypeIOParam(typeTup);
-#else
-                elemtyp = fpgt->typelem;
-#endif
                 typeTuple = SearchSysCache(TYPEOID, OidGD(elemtyp), 0, 0, 0);
 
                 if (!HeapTupleIsValid(typeTuple)) {
@@ -177,23 +161,16 @@ pl_plan_init(int argc, VALUE *argv, VALUE obj)
                 qdesc->arg_align[i] = fpgt->typalign;
                 ReleaseSysCache(typeTuple);
             }
-#if PG_PL_VERSION >= 75
             qdesc->argtypelems[i] = getTypeIOParam(typeTup);
-#else
-            qdesc->argtypelems[i] = ((Form_pg_type) GETSTRUCT(typeTup))->typelem;
-#endif
             if (!arg_is_array) {
                 fmgr_info(((Form_pg_type) GETSTRUCT(typeTup))->typinput,
                           &(qdesc->arginfuncs[i]));
                 qdesc->arglen[i] = (int) (((Form_pg_type) GETSTRUCT(typeTup))->typlen);
             }
             ReleaseSysCache(typeTup);
-#if PG_PL_VERSION >= 75
-#define freeList(a_) list_free(a_)
-#endif
-            freeList(typename->names);
+            list_free(typename->names);
             pfree(typename);
-            freeList(names);
+            list_free(names);
             pfree(argcopy);
             PLRUBY_END_PROTECT;
 
@@ -561,14 +538,10 @@ pl_plan_execp(argc, argv, obj)
     return result;
 }
 
-#if PG_PL_VERSION == 74
-#define PORTAL_ACTIVE(port) ((port)->portalActive)
-#elif WITH_GREENPLUM == 1
+#if WITH_GREENPLUM == 1
 #define  PORTAL_ACTIVE(port) ((port)->portal_status == PORTAL_ACTIVE)
-#elif PG_PL_VERSION > 74
-#define  PORTAL_ACTIVE(port) ((port)->status == PORTAL_ACTIVE)
 #else
-#define PORTAL_ACTIVE(port) 0
+#define PORTAL_ACTIVE(port) ((port)->status == PORTAL_ACTIVE)
 #endif
 
 static VALUE
@@ -647,13 +620,8 @@ pl_plan_each(argc, argv, obj)
     vortal = create_vortal(argc, argv, obj);
     Data_Get_Struct(vortal, struct PLportal, portal);
     PLRUBY_BEGIN_PROTECT(1);
-#if PG_PL_VERSION >= 80
     pgportal = SPI_cursor_open(NULL, qdesc->plan, portal->argvalues,
 			       portal->nulls, false);
-#else
-    pgportal = SPI_cursor_open(NULL, qdesc->plan, 
-                               portal->argvalues, portal->nulls);
-#endif
     Data_Get_Struct(vortal, struct PLportal, portal);
     free_args(portal);
     PLRUBY_END_PROTECT;
@@ -687,13 +655,8 @@ pl_plan_cursor(int argc, VALUE *argv, VALUE obj)
     vortal = create_vortal(argc, argv, obj);
     Data_Get_Struct(vortal, struct PLportal, portal);
     PLRUBY_BEGIN_PROTECT(1);
-#if PG_PL_VERSION >= 80
     pgportal = SPI_cursor_open(name, qdesc->plan, portal->argvalues,
 			       portal->nulls, false);
-#else
-    pgportal = SPI_cursor_open(name, qdesc->plan, 
-                               portal->argvalues, portal->nulls);
-#endif
     PLRUBY_END_PROTECT;
     if (pgportal == NULL) {
         rb_raise(pl_ePLruby,  "SPI_cursor_open() failed");

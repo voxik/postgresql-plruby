@@ -1334,8 +1334,6 @@ pl_path_concat(VALUE obj, VALUE a)
     return obj;
 }
 
-#if PG_PL_VERSION >= 75
-
 static VALUE
 pl_path_area(VALUE obj)
 {
@@ -1344,8 +1342,6 @@ pl_path_area(VALUE obj)
     Data_Get_Struct(obj, PATH, p0);
     RETURN_FLOAT(obj, PLRUBY_DFC1(path_area, p0));
 }
-
-#endif
 
 
 /* Extracted from geo_utils.c */
@@ -2220,13 +2216,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cPoint, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cPoint, "initialize_copy", pl_point_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cPoint, "marshal_load", pl_point_mload, 1);
     rb_define_method(pl_cPoint, "marshal_dump", pl_point_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cPoint, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cPoint, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cPoint, "x", pl_point_x, 0);
     rb_define_method(pl_cPoint, "x=", pl_point_setx, 1);
@@ -2267,13 +2261,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cLseg, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cLseg, "initialize_copy", pl_lseg_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cLseg, "marshal_load", pl_lseg_mload, 1);
     rb_define_method(pl_cLseg, "marshal_dump", pl_lseg_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cLseg, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cLseg, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cLseg, "[]", pl_lseg_aref, 1);
     rb_define_method(pl_cLseg, "[]=", pl_lseg_aset, 2);
@@ -2307,13 +2299,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cBox, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cBox, "initialize_copy", pl_box_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cBox, "marshal_load", pl_box_mload, 1);
     rb_define_method(pl_cBox, "marshal_dump", pl_box_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cBox, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cBox, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cBox, "low", pl_box_low, 0);
     rb_define_method(pl_cBox, "high", pl_box_high, 0);
@@ -2370,13 +2360,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cPath, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cPath, "initialize_copy", pl_path_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cPath, "marshal_load", pl_path_mload, 1);
     rb_define_method(pl_cPath, "marshal_dump", pl_path_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cPath, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cPath, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cPath, "to_s", pl_path_to_s, 0);
     rb_define_method(pl_cPath, "<=>", pl_path_cmp, 1);
@@ -2393,9 +2381,7 @@ void Init_plruby_geometry()
     rb_define_method(pl_cPath, "/", pl_path_div, 1);
     rb_define_method(pl_cPath, "to_poly", pl_path_to_poly, 0);
     rb_define_method(pl_cPath, "to_polygon", pl_path_to_poly, 0);
-#if PG_PL_VERSION >= 75
     rb_define_method(pl_cPath, "area", pl_path_area, 0);
-#endif
     pl_cPoly = rb_define_class("Polygon", rb_cObject);
     rb_undef_method(CLASS_OF(pl_cPoly), "method_missing");
 #if HAVE_RB_DEFINE_ALLOC_FUNC
@@ -2412,13 +2398,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cPoly, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cPoly, "initialize_copy", pl_poly_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cPoly, "marshal_load", pl_poly_mload, 1);
     rb_define_method(pl_cPoly, "marshal_dump", pl_poly_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cPoly, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cPoly, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cPoly, "to_s", pl_poly_to_s, 0);
     rb_define_method(pl_cPoly, "left?", pl_poly_left, 1);
@@ -2454,13 +2438,11 @@ void Init_plruby_geometry()
     rb_define_method(pl_cCircle, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cCircle, "initialize_copy", pl_circle_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cCircle, "marshal_load", pl_circle_mload, 1);
     rb_define_method(pl_cCircle, "marshal_dump", pl_circle_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cCircle, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cCircle, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cCircle, "to_s", pl_circle_to_s, 0);
     rb_define_method(pl_cCircle, "left?", pl_circle_left, 1);

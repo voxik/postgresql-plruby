@@ -1,7 +1,5 @@
 #include "plruby.h"
 
-#if PG_PL_VERSION >= 75
-
 #define PG_PL_READ_UNCOMMITTED 0
 #define PG_PL_READ_COMMITTED   1
 #define PG_PL_REPETABLE_READ   2
@@ -292,10 +290,6 @@ pl_transaction(VALUE obj)
     return Qnil;
 }
         
-#endif
-
-#if PG_PL_VERSION >= 81
-
 static VALUE
 pl_savepoint(VALUE obj, VALUE a)
 {
@@ -347,12 +341,9 @@ pl_rollback(VALUE obj, VALUE a)
     return Qnil;
 }
 
-#endif
-    
 void
 Init_plruby_trans()
 {
-#if PG_PL_VERSION >= 75
     VALUE pl_mPL;
 
     pl_mPL = rb_const_get(rb_cObject, rb_intern("PL"));
@@ -364,11 +355,9 @@ Init_plruby_trans()
     rb_define_global_const("REPETABLE_READ", INT2FIX(PG_PL_REPETABLE_READ));
     rb_define_global_const("SERIALIZABLE", INT2FIX(PG_PL_SERIALIZABLE));
     rb_define_global_function("transaction", pl_transaction, 0);
-#if PG_PL_VERSION >= 81
     rb_define_global_function("savepoint", pl_savepoint, 1);
     rb_define_global_function("release_savepoint", pl_release, 1);
     rb_define_global_function("rollback_to_savepoint", pl_rollback, 1);
-#endif
     pl_cTrans = rb_define_class_under(pl_mPL, "Transaction", rb_cObject);
 #if HAVE_RB_DEFINE_ALLOC_FUNC
     rb_undef_alloc_func(pl_cTrans);
@@ -379,5 +368,4 @@ Init_plruby_trans()
     rb_define_method(pl_cTrans, "commit", pl_commit, 0);
     rb_define_method(pl_cTrans, "abort", pl_abort, 0);
     rb_define_method(pl_cTrans, "rollback", pl_abort, 0);
-#endif
 }

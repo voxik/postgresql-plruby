@@ -90,8 +90,6 @@ pl_tint_s_datum(VALUE obj, VALUE a)
     return res;
 }
 
-#if PG_PL_VERSION >= 74
-	
 static VALUE
 pl_tint_mdump(int argc, VALUE *argv, VALUE obj)
 {
@@ -126,8 +124,6 @@ pl_tint_mload(VALUE obj, VALUE a)
     tint->high = RARRAY_PTR(a)[1];
     return obj;
 }
-
-#endif
     
 static VALUE
 pl_tint_init(VALUE obj, VALUE a, VALUE b)
@@ -253,13 +249,11 @@ void Init_plruby_datetime()
     rb_define_method(pl_cTinter, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cTinter, "initialize_copy", pl_tint_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cTinter, "marshal_load", pl_tint_mload, 1);
     rb_define_method(pl_cTinter, "marshal_dump", pl_tint_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cTinter, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cTinter, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cTinter, "low", pl_tint_low, 0);
     rb_define_method(pl_cTinter, "low=", pl_tint_lowset, 1);
