@@ -37,17 +37,18 @@ pl_trans_mark(void *trans)
     Data_Get_Struct(obj_, struct pl_trans, trans_);                     \
 } while (0)
 
-static char *savename = "savepoint_name";
-
-static DefElem *
-make_defelem(char *name, VALUE arg)
+#if PG_VERSION_NUM >= 110000
+#define make_savepoint_name(name) (name)
+#else
+static List *
+make_savepoint_name(char *name)
 {
     DefElem *f = makeNode(DefElem);
-    f->defname = name;
-    f->arg = (Node *)makeString(RSTRING_PTR(arg));
-    return f;
+    f->defname = "savepoint_name";
+    f->arg = (Node *)makeString(name);
+    return list_make1(f);
 }
-
+#endif
         
 static VALUE
 pl_intern_commit(VALUE obj)
@@ -69,13 +70,10 @@ pl_intern_commit(VALUE obj)
         }
     }
     else {
-	List *list;
-
         pl_elog(NOTICE, "ReleaseSavepoint");
-	list = list_make1(make_defelem(savename, trans->name));
         trans->name = Qnil;
         trans->commit = Qtrue;
-        ReleaseSavepoint(list);
+        ReleaseSavepoint(make_savepoint_name(RSTRING_PTR(trans->name)));
         CommitTransactionCommand();
         StartTransactionCommand();
     }
@@ -135,13 +133,10 @@ pl_intern_abort(VALUE obj)
         }
     }
     else {
-	List *list;
-
         pl_elog(NOTICE, "RollbackToSavepoint");
-	list = list_make1(make_defelem(savename, trans->name));
         trans->name = Qnil;
         trans->commit = Qtrue;
-        RollbackToSavepoint(list);
+        RollbackToSavepoint(make_savepoint_name(RSTRING_PTR(trans->name)));
         CommitTransactionCommand();
         RollbackAndReleaseCurrentSubTransaction();
     }
@@ -327,7 +322,7 @@ pl_release(VALUE obj, VALUE a)
     a = plruby_to_s(a);
     pl_elog(NOTICE, "====> releasesavepoint");
     PLRUBY_BEGIN_PROTECT(1);
-    ReleaseSavepoint(list_make1(make_defelem("savepoint_name", a)));
+    ReleaseSavepoint(make_savepoint_name(RSTRING_PTR(a)));
     CommitTransactionCommand();
     StartTransactionCommand();
     PLRUBY_END_PROTECT;
@@ -344,7 +339,7 @@ pl_rollback(VALUE obj, VALUE a)
     a = plruby_to_s(a);
     pl_elog(NOTICE, "====> rollbacksavepoint");
     PLRUBY_BEGIN_PROTECT(1);
-    RollbackToSavepoint(list_make1(make_defelem("savepoint_name", a)));
+    RollbackToSavepoint(make_savepoint_name(RSTRING_PTR(a)));
     CommitTransactionCommand();
     RollbackAndReleaseCurrentSubTransaction();
     PLRUBY_END_PROTECT;
