@@ -17,7 +17,7 @@ psql -q -n -X $DBNAME < test_mklang.sql
 echo "**** Running test queries ****"
 psql -q -n -X -e $DBNAME < test_queries.sql > test.out 2>&1
 
-if cmp -s test.expected.$1 test.out; then
+if cmp -s test.expected test.out; then
     echo "    Tests passed O.K."
 else
     echo "    Tests failed - look at diffs between"

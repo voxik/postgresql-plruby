@@ -7,8 +7,7 @@ pwd.sub!(%r{[^/]+/[^/]+$}, "")
 language, extension = 'c', '_new_trigger'
 opaque = 'language_handler'
 
-version = ARGV[0].to_i
-suffix = ARGV[1].to_s
+suffix = ARGV[0].to_s
 
 begin
    f = File.new("test_queries.sql", "w")
