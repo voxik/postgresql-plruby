@@ -2,17 +2,13 @@
 
 DBNAME=plruby_test
 
-echo "**** Destroy old database $DBNAME ****"
 dropdb $DBNAME
 
-echo "**** Create test database $DBNAME ****"
 createdb $DBNAME
 
-echo "**** Create procedural language plruby$2 ****"
 "${RUBY-ruby}" b.rb "$1"
 psql -q -n -X $DBNAME < test_mklang.sql
 
-echo "**** Running test queries ****"
 psql -q -n -X -e $DBNAME < test_queries.sql > test.out 2>&1
 
 if cmp -s test.expected test.out; then
@@ -21,4 +17,3 @@ else
     echo "    Tests failed - look at diffs between"
     echo "    test.expected and test.out"
 fi
-
