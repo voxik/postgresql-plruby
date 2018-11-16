@@ -25,7 +25,12 @@
 #include "funcapi.h"
 
 #include "utils/array.h"
+
+#ifdef HAVE_UTILS_VARLENA_H
+/* for SplitIdentifierString, previously in builtins.h  */
 #include "utils/varlena.h"
+#endif
+
 #include "utils/timestamp.h"
 #include "nodes/pg_list.h"
 #include "utils/typcache.h"
