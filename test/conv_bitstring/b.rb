@@ -16,16 +16,6 @@ begin
       f.print x
    end
    f.close
-   
-   Dir["test.expected.*.in"].each do |name|
-      result = name.sub(/\.in\z/, '')
-      f = File.new(result, "w")
-      IO.foreach(name) do |x|
-	 x.gsub!(/'plruby'/i, "'plruby#{suffix}'")
-	 f.print x
-      end
-      f.close
-   end
 
    f = File.new("test_mklang.sql", "w")
    f.print <<EOF
