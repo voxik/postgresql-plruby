@@ -4,9 +4,6 @@ include RbConfig
 pwd = Dir.pwd
 pwd.sub!(%r{[^/]+/[^/]+$}, "")
 
-language, extension = 'c', '_new_trigger'
-opaque = 'language_handler'
-
 suffix = ARGV[0].to_s
 
 begin
@@ -16,12 +13,13 @@ begin
       f.print x
    end
    f.close
+
    f = File.new("test_mklang.sql", "w")
    f.print <<EOF
  
-   create function plruby#{suffix}_call_handler() returns #{opaque}
+   create function plruby#{suffix}_call_handler() returns language_handler
     as '#{pwd}src/plruby#{suffix}.#{CONFIG["DLEXT"]}'
-   language '#{language}';
+   language c;
  
    create trusted procedural language 'plruby#{suffix}'
         handler plruby#{suffix}_call_handler;
