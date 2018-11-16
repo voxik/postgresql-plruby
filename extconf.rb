@@ -147,15 +147,6 @@ have_func("rb_hash_delete", "ruby.h")
 
 have_header("st.h")
 
-if version >= 74
-   if !have_header("server/utils/array.h")
-      if !have_header("utils/array.h")
-         raise "I cant't find server/utils/array.h"
-      end
-      $CFLAGS += " -DPG_UTILS_ARRAY"
-   end
-end
-
 if macro_defined?("PG_TRY", %Q{#include "c.h"\n#include "utils/elog.h"})
     $CFLAGS += " -DPG_PL_TRYCATCH"
 end
