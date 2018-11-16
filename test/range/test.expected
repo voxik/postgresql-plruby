@@ -1,17 +1,4 @@
-SELECT * FROM pg_settings WHERE name LIKE 'enable%';
-       name        | setting | unit |                  category                   |                       short_desc                       | extra_desc | context | vartype | source  | min_val | max_val | enumvals | boot_val | reset_val | sourcefile | sourceline 
--------------------+---------+------+---------------------------------------------+--------------------------------------------------------+------------+---------+---------+---------+---------+---------+----------+----------+-----------+------------+------------
- enable_bitmapscan | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of bitmap-scan plans.        |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_hashagg    | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of hashed aggregation plans. |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_hashjoin   | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of hash join plans.          |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_indexscan  | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of index-scan plans.         |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_mergejoin  | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of merge join plans.         |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_nestloop   | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of nested-loop join plans.   |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_seqscan    | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of sequential-scan plans.    |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_sort       | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of explicit sort steps.      |            | user    | bool    | default |         |         |          | on       | on        |            |           
- enable_tidscan    | on      |      | Query Tuning / Planner Method Configuration | Enables the planner's use of TID scan plans.           |            | user    | bool    | default |         |         |          | on       | on        |            |           
-(9 rows)
-
+SET client_min_messages TO warning;
 CREATE TABLE foo2(fooid int, f2 int);
 INSERT INTO foo2 VALUES(1, 11);
 INSERT INTO foo2 VALUES(2, 22);
@@ -19,10 +6,6 @@ INSERT INTO foo2 VALUES(1, 111);
 CREATE FUNCTION foot(int) returns setof foo2 as ' 
 "SELECT * FROM foo2 WHERE fooid = #{args[0]}"' 
 language 'plruby';
-select * from foo2, foot(foo2.fooid) z where foo2.f2 = z.f2;
-ERROR:  function expression in FROM cannot refer to other relations of same query level
-LINE 1: select * from foo2, foot(foo2.fooid) z where foo2.f2 = z.f2;
-                                 ^
 select * from foo2 where f2 in (
 	select f2 from foot(foo2.fooid) z where z.fooid = foo2.fooid
 ) ORDER BY 1,2;
@@ -59,7 +42,6 @@ select foot.fooid, foot.f2 from foot(sin(pi()/2)::int) ORDER BY 1,2;
 (2 rows)
 
 CREATE TABLE foo (fooid int, foosubid int, fooname text, primary key(fooid,foosubid));
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "foo_pkey" for table "foo"
 INSERT INTO foo VALUES(1,1,'Joe');
 INSERT INTO foo VALUES(1,2,'Ed');
 INSERT INTO foo VALUES(2,1,'Mary');
@@ -209,7 +191,6 @@ DROP FUNCTION foot(int);
 DROP TABLE foo2;
 DROP TABLE foo;
 CREATE TABLE foorescan (fooid int, foosubid int, fooname text, primary key(fooid,foosubid));
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "foorescan_pkey" for table "foorescan"
 INSERT INTO foorescan values(5000,1,'abc.5000.1');
 INSERT INTO foorescan values(5001,1,'abc.5001.1');
 INSERT INTO foorescan values(5002,1,'abc.5002.1');
@@ -299,7 +280,6 @@ SELECT * FROM foorescan f WHERE f.fooid IN (
 (10 rows)
 
 CREATE TABLE barrescan (fooid int primary key);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "barrescan_pkey" for table "barrescan"
 INSERT INTO barrescan values(5003);
 INSERT INTO barrescan values(5004);
 INSERT INTO barrescan values(5005);
