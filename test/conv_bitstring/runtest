@@ -1,7 +1,6 @@
 #!/bin/sh
 
 DBNAME=plruby_test
-export DBNAME
 
 echo "**** Destroy old database $DBNAME ****"
 dropdb $DBNAME
