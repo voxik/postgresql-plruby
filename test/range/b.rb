@@ -1,6 +1,6 @@
 #!/usr/bin/ruby
 require 'rbconfig'
-include RbConfig
+
 pwd = Dir.pwd
 pwd.sub!(%r{[^/]+/[^/]+$}, "")
 
@@ -18,7 +18,7 @@ begin
    f.print <<EOF
  
    create function plruby#{suffix}_call_handler() returns language_handler
-    as '#{pwd}src/plruby#{suffix}.#{CONFIG["DLEXT"]}'
+    as '#{pwd}src/plruby#{suffix}.#{RbConfig::CONFIG["DLEXT"]}'
    language c;
  
    create trusted procedural language 'plruby#{suffix}'
