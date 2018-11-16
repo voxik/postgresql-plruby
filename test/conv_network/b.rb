@@ -1,8 +1,7 @@
 #!/usr/bin/ruby
 require 'rbconfig'
 
-pwd = Dir.pwd
-pwd.sub!(%r{[^/]+/[^/]+$}, "")
+dir = File.expand_path('../..', Dir.pwd)
 
 suffix = ARGV[0].to_s
 
@@ -18,7 +17,7 @@ begin
    f.print <<EOF
  
    create function plruby#{suffix}_call_handler() returns language_handler
-    as '#{pwd}src/plruby#{suffix}.#{RbConfig::CONFIG["DLEXT"]}'
+    as '#{dir}/src/plruby#{suffix}.#{RbConfig::CONFIG["DLEXT"]}'
    language c;
  
    create trusted procedural language 'plruby#{suffix}'
