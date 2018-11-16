@@ -581,7 +581,7 @@ pl_tuple_heap(VALUE c, VALUE tuple)
         rb_raise(pl_ePLruby, "expected an Array");
     }
     if (tupdesc->natts != RARRAY_LEN(c)) {
-        rb_raise(pl_ePLruby, "Invalid number of rows (%ld expected %d)",
+        rb_raise(pl_ePLruby, "Invalid number of columns (got %ld, expected %d)",
                  RARRAY_LEN(c), tupdesc->natts);
     }
     dvalues = ALLOCA_N(Datum, RARRAY_LEN(c));
