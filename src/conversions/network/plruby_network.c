@@ -162,11 +162,7 @@ NAME_(VALUE obj)						\
 
 NETWORK_CALL(pl_inet_host, network_host);
 
-#if PG_PL_VERSION >= 82
 NETWORK_CALL(pl_inet_abbrev, inet_abbrev);
-#else
-NETWORK_CALL(pl_inet_abbrev, network_abbrev);
-#endif
 
 static VALUE
 pl_inet_to_s(VALUE obj)
@@ -210,8 +206,6 @@ pl_inet_setmasklen(VALUE obj, VALUE a)
     return res;
 }
 
-#if PG_PL_VERSION >= 74
-
 static VALUE
 pl_inet_family(VALUE obj)
 {
@@ -234,8 +228,6 @@ pl_inet_family(VALUE obj)
     return str;
 }
 
-#endif
-
 #define NETWORK_INET(NAME_, FUNCTION_)					\
 static VALUE								\
 NAME_(VALUE obj)							\
@@ -257,12 +249,7 @@ NAME_(VALUE obj)							\
 NETWORK_INET(pl_inet_broadcast, network_broadcast);
 NETWORK_INET(pl_inet_network, network_network);
 NETWORK_INET(pl_inet_netmask, network_netmask);
-
-#if PG_PL_VERSION >= 74
-
 NETWORK_INET(pl_inet_hostmask, network_hostmask);
-
-#endif
 
 static VALUE
 pl_inet_last(VALUE obj)
@@ -280,8 +267,6 @@ pl_inet_last(VALUE obj)
     if (OBJ_TAINTED(obj)) OBJ_TAINT(res);
     return res;
 }
-
-#if PG_PL_VERSION >= 75
 
 static VALUE
 pl_inet_s_caddr(VALUE obj)
@@ -328,9 +313,6 @@ pl_inet_s_sport(VALUE obj)
 {
     return INT2NUM(PLRUBY_DFC0(inet_server_port));
 }
-
-#endif
-    
 
 static void pl_mac_mark(macaddr *mac) {}
 
@@ -465,25 +447,21 @@ void Init_plruby_network()
     rb_define_singleton_method(pl_cInet, "new", plruby_s_new, -1);
     rb_define_singleton_method(pl_cInet, "from_string", plruby_s_new, -1);
     rb_define_singleton_method(pl_cInet, "from_datum", pl_inet_s_datum, 1);
-#if PG_PL_VERSION >= 75
     rb_define_singleton_method(pl_cInet, "client_addr", pl_inet_s_caddr, 0);
     rb_define_singleton_method(pl_cInet, "client_port", pl_inet_s_cport, 0);
     rb_define_singleton_method(pl_cInet, "server_addr", pl_inet_s_saddr, 0);
     rb_define_singleton_method(pl_cInet, "server_port", pl_inet_s_sport, 0);
-#endif
     rb_define_method(pl_cInet, "to_datum", pl_inet_to_datum, 1);
     rb_define_method(pl_cInet, "initialize", pl_inet_init, -1);
 #ifndef HAVE_RB_INITIALIZE_COPY
     rb_define_method(pl_cInet, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cInet, "initialize_copy", pl_inet_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cInet, "marshal_load", pl_inet_mload, 1);
     rb_define_method(pl_cInet, "marshal_dump", pl_inet_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cInet, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cInet, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cInet, "<=>", pl_inet_cmp, 1);
     rb_define_method(pl_cInet, "contained?", pl_inet_contained, 1);
@@ -494,15 +472,11 @@ void Init_plruby_network()
     rb_define_method(pl_cInet, "abbrev", pl_inet_abbrev, 0);
     rb_define_method(pl_cInet, "masklen", pl_inet_masklen, 0);
     rb_define_method(pl_cInet, "set_masklen", pl_inet_setmasklen, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cInet, "family", pl_inet_family, 0);
-#endif
     rb_define_method(pl_cInet, "broadcast", pl_inet_broadcast, 0);
     rb_define_method(pl_cInet, "network", pl_inet_network, 0);
     rb_define_method(pl_cInet, "netmask", pl_inet_netmask, 0);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cInet, "hostmask", pl_inet_hostmask, 0);
-#endif
     rb_define_method(pl_cInet, "to_s", pl_inet_to_s, 0);
     rb_define_method(pl_cInet, "first", pl_inet_network, 0);
     rb_define_method(pl_cInet, "last", pl_inet_last, 0);
@@ -523,13 +497,11 @@ void Init_plruby_network()
     rb_define_method(pl_cMac, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cMac, "initialize_copy", pl_mac_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cMac, "marshal_load", pl_mac_mload, 1);
     rb_define_method(pl_cMac, "marshal_dump", pl_mac_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cMac, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cMac, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cMac, "<=>", pl_mac_cmp, 1);
     rb_define_method(pl_cMac, "to_s", pl_mac_to_s, 0);

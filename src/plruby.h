@@ -27,16 +27,10 @@
 #include "utils/array.h"
 #include "utils/varlena.h"
 #include "utils/timestamp.h"
-
-#if PG_PL_VERSION >= 75
 #include "nodes/pg_list.h"
 #include "utils/typcache.h"
 #include "access/xact.h"
-#endif
-
-#if PG_PL_VERSION >= 81
 #include "utils/memutils.h"
-#endif
 
 #if PG_VERSION_NUM >= 90300
 #include "access/htup_details.h"
@@ -225,9 +219,7 @@ typedef struct pl_proc_desc
     bool	result_val;
     char	result_align;
     int		nargs;
-#if PG_PL_VERSION >= 75
     int         named_args;
-#endif
     FmgrInfo	arg_func[FUNC_MAX_ARGS];
     Oid		arg_elem[FUNC_MAX_ARGS];
     Oid		arg_type[FUNC_MAX_ARGS];

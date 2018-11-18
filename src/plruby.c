@@ -50,14 +50,9 @@ PG_FUNCTION_INFO_V1(PLRUBY_CALL_HANDLER);
 
 static Datum pl_func_handler(struct pl_thread_st *);
 static HeapTuple pl_trigger_handler(struct pl_thread_st *);
-
-#if PG_PL_VERSION >= 81
 static Datum pl_validator_handler(struct pl_thread_st *);
-#endif
 
-#if PG_PL_VERSION >= 82
 PG_MODULE_MAGIC;
-#endif
 
 #ifdef PLRUBY_TIMEOUT
 int plruby_in_progress = 0;
@@ -350,12 +345,10 @@ pl_protect(plth)
     }
 #endif
     {
-#if PG_PL_VERSION >= 81
 	if (plth->validator) {
 	    retval = pl_validator_handler(plth);
 	}
 	else
-#endif
 	{
 	    if (CALLED_AS_TRIGGER(plth->fcinfo)) {
 		retval = PointerGD(pl_trigger_handler(plth));
@@ -664,8 +657,6 @@ pl_internal_call_handler(struct pl_thread_st *plth)
     return ((Datum)0);
 }
 
-#if PG_PL_VERSION >= 81
-
 PG_FUNCTION_INFO_V1(PLRUBY_VALIDATOR);
 
 Datum
@@ -711,8 +702,6 @@ pl_validator_handler(struct pl_thread_st *plth)
     PG_RETURN_VOID();
 }
 
-#endif
-
 Datum
 PLRUBY_CALL_HANDLER(PG_FUNCTION_ARGS)
 {
@@ -725,8 +714,6 @@ PLRUBY_CALL_HANDLER(PG_FUNCTION_ARGS)
 }
 
 static char *definition = "def PLtemp.%s(%s)\n%s\nend";
-
-#if PG_PL_VERSION >= 82
 
 static VALUE
 pl_arg_names(HeapTuple procTup, pl_proc_desc *prodesc) 
@@ -768,60 +755,6 @@ pl_arg_names(HeapTuple procTup, pl_proc_desc *prodesc)
     return result;
 }
 
-#else
-
-static VALUE
-pl_arg_names(HeapTuple procTup, pl_proc_desc *prodesc)
-{
-#if PG_PL_VERSION < 75
-    return rb_str_new2("args");
-#else
-    Datum argnamesDatum;
-    char *name;
-    bool isNull;
-    Datum *elems;
-    int nelems;
-    VALUE result;
-    int	i;
-    int nargs = prodesc->nargs;
-
-    prodesc->named_args = 0;
-    if (nargs == 0) {
-        return rb_str_new2("args");
-    }
-    argnamesDatum = SysCacheGetAttr(PROCOID, procTup, 
-                                    Anum_pg_proc_proargnames, &isNull);
-    if (isNull) {
-        return rb_str_new2("args");
-    }
-    PLRUBY_BEGIN_PROTECT(1);
-    deconstruct_array(DatumGetArrayTypeP(argnamesDatum), TEXTOID, -1, false,
-                      'i', &elems, &nelems);
-    if (nelems != nargs) {
-        result = Qnil;
-    }
-    else {
-        prodesc->named_args = 1;
-        result = rb_str_new2("");
-	for (i = 0; i < nargs; i++) {
-            name =  DatumGetCString(DFC1(textout, elems[i]));
-            rb_str_cat2(result, name);
-            pfree(name);
-            if (i != nargs - 1) {
-                rb_str_cat2(result, ",");
-            }
-        }
-    }
-    PLRUBY_END_PROTECT;
-    if (NIL_P(result)) {
-        rb_raise(pl_ePLruby, "invalid number of arguments for proargnames");
-    }
-    return result;
-#endif
-}
-
-#endif
-
 static VALUE
 pl_compile(struct pl_thread_st *plth, int istrigger)
 {
@@ -858,7 +791,6 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
     procStruct = (Form_pg_proc) GETSTRUCT(procTup);
 
     if (!istrigger) {
-#if PG_PL_VERSION >= 74
 	if (procStruct->prorettype == ANYARRAYOID ||
 	    procStruct->prorettype == ANYELEMENTOID) {
 	    result_oid = get_fn_expr_rettype(fcinfo->flinfo);
@@ -867,15 +799,12 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
 	    }
 	}
 	else
-#endif
 	{
 	    result_oid = procStruct->prorettype;
 	}
 
 	nargs = procStruct->pronargs;
 	for (i = 0; i < nargs; ++i) {
-#if PG_PL_VERSION >= 74
-#if PG_PL_VERSION >= 81
 	    if (procStruct->proargtypes.values[i] == ANYARRAYOID ||
 		procStruct->proargtypes.values[i] == ANYELEMENTOID) {
 		arg_type[i] = get_fn_expr_argtype(fcinfo->flinfo, i);
@@ -883,23 +812,9 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
 		    arg_type[i] = procStruct->proargtypes.values[i];
 		}
 	    }
-#else
-	    if (procStruct->proargtypes[i] == ANYARRAYOID ||
-		procStruct->proargtypes[i] == ANYELEMENTOID) {
-		arg_type[i] = get_fn_expr_argtype(fcinfo->flinfo, i);
-		if (arg_type[i] == InvalidOid) {
-		    arg_type[i] = procStruct->proargtypes[i];
-		}
-	    }
-#endif
-	    else 
-#endif
+
 	    {
-#if PG_PL_VERSION >= 81
 		arg_type[i] = procStruct->proargtypes.values[i];
-#else
-		arg_type[i] = procStruct->proargtypes[i];
-#endif
 	    }
 	}
     }
@@ -911,7 +826,6 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
         uptodate = 
             (prodesc->fn_xmin == HeapTupleHeaderGetXmin(procTup->t_data)) &&
             (prodesc->fn_cmin == HeapTupleHeaderGetCmin(procTup->t_data));
-#if PG_PL_VERSION >= 74
 	if (!istrigger) {
 	    if (uptodate) {
 		uptodate = result_oid == prodesc->result_oid;
@@ -927,7 +841,6 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
 		}
 	    }
 	}
-#endif
         if (!uptodate) {
             rb_remove_method(pl_sPLtemp, internal_proname);
             value_proc_desc = Qnil;
@@ -1093,7 +1006,6 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
         {
             Datum prosrc;
             VALUE argname = Qnil;
-#if PG_PL_VERSION >= 75
             bool isnull;
 
             PLRUBY_BEGIN_PROTECT(1);
@@ -1102,9 +1014,6 @@ pl_compile(struct pl_thread_st *plth, int istrigger)
             if (isnull) {
                 rb_raise(pl_ePLruby, "null source");
             }
-#else
-            prosrc = PointerGD(&procStruct->prosrc);
-#endif
 	    if (!istrigger) {
 		argname = plruby_to_s(pl_arg_names(procTup, prodesc));
 	    }

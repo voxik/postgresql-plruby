@@ -14,8 +14,6 @@
     pfree(p2_);					\
 } while (0)
 
-#if PG_PL_VERSION >= 74
-
 #define PL_MDUMP(name_,func_)                                   \
 static VALUE                                                    \
 name_(int argc, VALUE *argv, VALUE obj)                         \
@@ -76,14 +74,6 @@ name_(VALUE obj, VALUE a)                                               \
 
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
 extern VALUE plruby_s_load _((VALUE, VALUE));
-#endif
-
-#else
-
-#define PL_MDUMP(name_,func_)
-#define PL_MLOAD(name_,func_,type_) 
-#define PL_MLOADVAR(name_,func_,type_,size_)
-
 #endif
 
 extern VALUE plruby_to_s _((VALUE));

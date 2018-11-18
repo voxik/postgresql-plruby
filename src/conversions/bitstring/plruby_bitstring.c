@@ -100,29 +100,8 @@ pl_bit_init(int argc, VALUE *argv, VALUE obj)
     taint = OBJ_TAINTED(a);
     if (rb_respond_to(a, rb_intern("to_int"))) {
         a = rb_funcall2(a, rb_intern("to_int"), 0, 0);
-#if PG_PL_VERSION >= 75
         v = (void *)PLRUBY_DFC2(bitfromint4, Int32GetDatum(NUM2LONG(a)),
                                 Int32GetDatum(length));
-#else
-        v = (void *)PLRUBY_DFC1(bitfromint4, Int32GetDatum(NUM2LONG(a)));
-        if (length > 0) {
-	    void *v1;
-
-            int ll = DatumGetInt32(PLRUBY_DFC1(bitlength, v));
-            if (length != ll) {
-                if (length < ll) {
-                    v1 = (void *)PLRUBY_DFC2(bitshiftleft, v,
-                                             Int32GetDatum(ll - length));
-                    pfree(v);
-                }
-                else {
-                    v1 = v;
-                }
-                v = (void *)PLRUBY_DFC3(bit, v1, Int32GetDatum(length), true);
-                pfree(v1);
-            }
-        }
-#endif
     }
     if (!v) {
         a = plruby_to_s(a);
@@ -547,13 +526,11 @@ void Init_plruby_bitstring()
     rb_define_method(pl_cBit, "clone", plruby_clone, 0);
 #endif
     rb_define_method(pl_cBit, "initialize_copy", pl_bit_init_copy, 1);
-#if PG_PL_VERSION >= 74
     rb_define_method(pl_cBit, "marshal_load", pl_bit_mload, 1);
     rb_define_method(pl_cBit, "marshal_dump", pl_bit_mdump, -1);
 #ifndef RUBY_CAN_USE_MARSHAL_LOAD
     rb_define_singleton_method(pl_cBit, "_load", plruby_s_load, 1);
     rb_define_alias(pl_cBit, "_dump", "marshal_dump");
-#endif
 #endif
     rb_define_method(pl_cBit, "<=>", pl_bit_cmp, 1);
     rb_define_method(pl_cBit, "each", pl_bit_each, 0);

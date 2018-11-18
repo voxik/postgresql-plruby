@@ -35,9 +35,8 @@ rescue
    true
 end
 
-def create_lang(version = 74, suffix = '', safe = 0)
+def create_lang(suffix = '', safe = 0)
    language, opaque = 'c', 'language_handler'
-   opaque = "opaque" if version == 72
    safe = safe.to_i
    trusted = if safe >= 4
 		"trusted"
@@ -147,15 +146,6 @@ have_func("rb_hash_delete", "ruby.h")
 
 have_header("st.h")
 
-if version >= 74
-   if !have_header("server/utils/array.h")
-      if !have_header("utils/array.h")
-         raise "I cant't find server/utils/array.h"
-      end
-      $CFLAGS += " -DPG_UTILS_ARRAY"
-   end
-end
-
 if macro_defined?("PG_TRY", %Q{#include "c.h"\n#include "utils/elog.h"})
     $CFLAGS += " -DPG_PL_TRYCATCH"
 end
@@ -188,8 +178,6 @@ if enable_conversion
       end
    end
 end
-
-$CFLAGS += " -DPG_PL_VERSION=#{version}"
 
 suffix = with_config('suffix').to_s
 $CFLAGS += " -DPLRUBY_CALL_HANDLER=plruby#{suffix}_call_handler"
@@ -264,6 +252,6 @@ end
 
 make.close
 
-create_lang(version, suffix, safe)
+create_lang(suffix, safe)
 
 create_header('src/extconf.h')
