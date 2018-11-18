@@ -1,11 +1,7 @@
 #!/usr/bin/ruby
 require 'rbconfig'
-include RbConfig
-pwd = Dir.pwd
-pwd.sub!(%r{[^/]+/[^/]+$}, "")
 
-language, extension = 'c', '_new_trigger'
-opaque = 'language_handler'
+dir = File.expand_path('../..', Dir.pwd)
 
 suffix = ARGV[0].to_s
 
@@ -16,12 +12,13 @@ begin
       f.print x
    end
    f.close
+
    f = File.new("test_mklang.sql", "w")
    f.print <<EOF
  
-   create function plruby#{suffix}_call_handler() returns #{opaque}
-    as '#{pwd}src/plruby#{suffix}.#{CONFIG["DLEXT"]}'
-   language '#{language}';
+   create function plruby#{suffix}_call_handler() returns language_handler
+    as '#{dir}/src/plruby#{suffix}.#{RbConfig::CONFIG["DLEXT"]}'
+   language c;
  
    create trusted procedural language 'plruby#{suffix}'
         handler plruby#{suffix}_call_handler;
