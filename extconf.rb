@@ -16,14 +16,27 @@ end
 def check_autoload(safe = 12)
    File.open("a.rb", "w") {|f| f.puts "class A; end" }
    autoload :A, "a.rb"
-   Thread.new do
-      begin
+   # $SAFE is processed as global and can be reset back to 0 since Ruby 2.6.0.
+   if RUBY_VERSION < "2.6.0"
+     Thread.new do
+       begin
          $SAFE = safe
          A.new
-      rescue Exception
+       rescue Exception
          false
-      end
-   end.value
+       end
+     end.value
+   else
+     begin
+       old_safe = $SAFE
+       $SAFE = safe
+       A.new
+     rescue Exception
+       false
+     ensure
+       $SAFE = old_safe
+     end
+   end
 ensure
    File.unlink("a.rb")
 end
